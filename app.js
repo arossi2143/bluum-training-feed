@@ -1,9 +1,12 @@
 // Bluum Training Feed — TikTok-style vertical scroll
 // Smart shuffle: daily seed + topic spread + watch tracking + mandatory intro
+// Supports both YouTube embeds and hosted MP4 files
 
 // ── Video Data ────────────────────────────────────────────────────────────────
-// Add new videos here. Fields: id, topic, title, desc, youtubeId, link, linkLabel
-// Topics with more videos will get proportional representation in the feed.
+// Add new videos here.
+// YouTube videos:     { id, topic, title, desc, youtubeId, link, linkLabel }
+// Hosted MP4 videos:   { id, topic, title, desc, mp4: "https://...", thumbnail: "https://...", link, linkLabel }
+// Both fields can coexist — YouTube takes priority in the UI.
 const TRAINING_DATA = [
   { id:1,  topic:"Company Overview", title:"Who Is Bluum?", desc:"North America's largest learning catalyst — 30+ years transforming K-20 education through technology. We make it easy for schools to plan, buy, use, and support the tools that transform learning.", youtubeId:"LaiWO3hGkFU", link:"https://www.bluum.com/", linkLabel:"Learn More at Bluum.com" },
   { id:2,  topic:"Google", title:"Go BIG with Google for Education", desc:"The Google wave in education keeps gaining momentum. Chromebooks, Google Workspace, and Classroom are the backbone of modern K-12 schools. Here's how to position Google solutions for your districts.", youtubeId:"2YfAVQrO03c", link:"https://edu.google.com/", linkLabel:"Google for Education" },
@@ -59,7 +62,7 @@ function saveProgress(id, pct) {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
 }
 
-// ── Seeded Shuffle (deterministic per seed) ──────────────────────────────────
+// ── Seeded Shuffle ──────────────────────────────────────────────────────────
 function seededShuffle(arr, seed) {
   const a = [...arr];
   let s = seed;
@@ -71,7 +74,7 @@ function seededShuffle(arr, seed) {
   return a;
 }
 
-// ── Daily Seed ───────────────────────────────────────────────────────────────
+// ── Daily Seed ─────────────────────────────────────────────────────────────
 function getDailySeed() {
   const now = new Date();
   const ymd = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
@@ -81,15 +84,12 @@ function getDailySeed() {
 }
 
 // ── Topic Spread ────────────────────────────────────────────────────────────
-// Round-robin through topics so videos don't clump
 function spreadTopics(items) {
   const byTopic = {};
   for (const item of items) {
     if (!byTopic[item.topic]) byTopic[item.topic] = [];
-    byTopic[item[item.topic.length - 1] > 0 ? item.topic : item.topic] // just topic key
     byTopic[item.topic].push(item);
   }
-  // Rebuild: interleave topics fairly
   const topics = Object.keys(byTopic);
   const maxLen = Math.max(...topics.map(t => byTopic[t].length));
   const result = [];
@@ -101,41 +101,43 @@ function spreadTopics(items) {
   return result;
 }
 
-// ── Build Smart Feed Order ──────────────────────────────────────────────────
+// ── Build Feed Order ─────────────────────────────────────────────────────────
 function buildFeedOrder() {
-  const Pinned_ID = 1; // Bluum Overview always first
-  const pinned = TRAINING_DATA.find(d => d.id === Pinned_ID);
-  const rest = TRAINING_DATA.filter(d => d.id !== Pinned_ID);
+  const PINNED_ID = 1;
+  const pinned = TRAINING_DATA.find(d => d.id === PINNED_ID);
+  const rest = TRAINING_DATA.filter(d => d.id !== PINNED_ID);
   const watched = getWatched();
   const seed = getDailySeed();
 
-  // Separate watched vs unwatched
   const unwatched = rest.filter(d => !watched.has(d.id));
-  const alreadyWatched = rest.filter(d => watched.has(d.id));
+  const watchedRest = rest.filter(d => watched.has(d.id));
 
-  // Shuffle each group with same daily seed (team stays in sync)
   const shuffledUnwatched = seededShuffle(unwatched, seed);
-  const shuffledWatched = seededShuffle(alreadyWatched, seed);
+  const shuffledWatched = seededShuffle(watchedRest, seed + 1);
 
-  // Spread topics within each group
   const spreadUnwatched = spreadTopics(shuffledUnwatched);
   const spreadWatched = spreadTopics(shuffledWatched);
 
-  // Unwatched float to front, watched trail behind
-  // But: within unwatched, we do a smart sub-shuffle:
-  // If there are lots of topics, spread them; if few, just shuffle
-  const final = pinned ? [pinned, ...spreadUnwatched, ...spreadWatched] : [...spreadUnwatched, ...spreadWatched];
-
-  return final;
+  return pinned ? [pinned, ...spreadUnwatched, ...spreadWatched] : [...spreadUnwatched, ...spreadWatched];
 }
 
-// ── Active Topic List ───────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function isYouTube(item) { return !!(item.youtubeId); }
+function isMP4(item)     { return !!(item.mp4); }
+
+function getThumbUrl(item) {
+  if (item.thumbnail) return `background-image:url('${item.thumbnail}')`;
+  if (item.youtubeId) return `background-image:url('https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg')`;
+  return 'background:#1a1a2e';
+}
+
+// ── Active Topics ────────────────────────────────────────────────────────────
 const TOPICS = ["All", "Unwatched", ...new Set(TRAINING_DATA.map(d => d.topic))];
 
 let currentFilter = "All";
 let currentIndex = 0;
-let feedOrder = [];    // ordered list of TRAINING_DATA items
-let players = {};       // itemId → YT.Player instance
+let feedOrder = [];
+let players = {};       // itemId → { play(), pause(), getPlayerState(), unMute?() }
 let ytApiReady = false;
 
 const icons = {
@@ -150,10 +152,7 @@ const icons = {
 };
 
 // ── YouTube IFrame API ──────────────────────────────────────────────────────
-function onYouTubeIframeAPIReady() {
-  ytApiReady = true;
-}
-
+function onYouTubeIframeAPIReady() { ytApiReady = true; }
 const tag = document.createElement('script');
 tag.src = 'https://www.youtube.com/iframe_api';
 document.head.appendChild(tag);
@@ -164,13 +163,12 @@ function renderApp() {
   const watched = getWatched();
   const progress = getProgress();
   const watchedCount = [...watched].length;
-  const totalCount = TRAINING_DATA.length;
 
   document.getElementById("app").innerHTML = `
     <div class="top-bar">
       <div class="logo"><span class="logo-dot"></span>Bluum Training</div>
-      <div class="progress-badge" id="progress-badge" title="Your watch progress">
-        ${icons.eye} <span id="progress-text">${watchedCount}/${totalCount}</span>
+      <div class="progress-badge" title="Videos you've watched">
+        ${icons.eye} <span>${watchedCount}/${TRAINING_DATA.length}</span>
       </div>
     </div>
     <div class="filter-bar">
@@ -180,11 +178,12 @@ function renderApp() {
       ${feedOrder.map((item, i) => {
         const isWatched = watched.has(item.id);
         const pct = progress[item.id] || 0;
+        const thumbStyle = getThumbUrl(item);
         return `
-        <div class="video-card${isWatched?" watched":""}" data-index="${i}" data-id="${item.id}" data-yt="${item.youtubeId}">
+        <div class="video-card${isWatched?" watched":""}" data-index="${i}" data-id="${item.id}">
           ${isWatched ? `<div class="watched-badge">${icons.check} Watched</div>` : ""}
           <div class="player-wrap" id="wrap-${item.id}">
-            <div class="yt-thumb" id="thumb-${item.id}" style="background-image:url('https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg')">
+            <div class="yt-thumb" id="thumb-${item.id}" style="${thumbStyle}">
               <div class="play-ring">${icons.play}</div>
               ${pct > 0 && pct < 95 ? `<div class="resume-bar"><div class="resume-fill" style="width:${pct}%"></div></div>` : ""}
             </div>
@@ -199,9 +198,9 @@ function renderApp() {
             </a>
           </div>
           <div class="action-row">
-            <div class="action-btn" data-action="like" data-id="${item.id}">${icons.heart}<span>Like</span></div>
-            <div class="action-btn" data-action="save" data-id="${item.id}">${icons.bookmark}<span>Save</span></div>
-            <div class="action-btn" data-action="share" data-id="${item.id}">${icons.share}<span>Share</span></div>
+            <div class="action-btn">${icons.heart}<span>Like</span></div>
+            <div class="action-btn">${icons.bookmark}<span>Save</span></div>
+            <div class="action-btn">${icons.share}<span>Share</span></div>
           </div>
           <div class="counter">${i+1} / ${feedOrder.length}</div>
         </div>`;
@@ -215,22 +214,22 @@ function renderApp() {
       <div class="nav-hint">${icons.scroll} Scroll — videos auto-play with audio</div>
     </div>
   `;
+
   bindEvents();
-  if (ytApiReady && feedOrder[0]) createPlayer(feedOrder[0].id, feedOrder[0].youtubeId, false);
-}
-
-function getFilteredFeed() {
-  if (currentFilter === "All") return feedOrder;
-  if (currentFilter === "Unwatched") {
-    const watched = getWatched();
-    return feedOrder.filter(item => !watched.has(item.id));
+  // Pre-init first video
+  const first = feedOrder[0];
+  if (first) {
+    if (isYouTube(first)) {
+      if (ytApiReady) createYTPlayer(first.id, first.youtubeId, false);
+    } else {
+      initMP4Player(first.id, false);
+    }
   }
-  return feedOrder.filter(d => d.topic === currentFilter);
 }
 
-// ── Player ──────────────────────────────────────────────────────────────────
-function createPlayer(itemId, ytId, autoplay) {
-  if (!ytApiReady) { setTimeout(() => createPlayer(itemId, ytId, autoplay), 200); return; }
+// ── YouTube Player ───────────────────────────────────────────────────────────
+function createYTPlayer(itemId, ytId, autoplay) {
+  if (!ytApiReady) { setTimeout(() => createYTPlayer(itemId, ytId, autoplay), 200); return; }
   const wrap = document.getElementById(`wrap-${itemId}`);
   if (!wrap) return;
 
@@ -242,21 +241,14 @@ function createPlayer(itemId, ytId, autoplay) {
     events: {
       onReady: (e) => {
         players[itemId] = e.target;
-        if (autoplay) {
-          e.target.unMute();
-          e.target.playVideo();
-        } else {
-          e.target.mute();
-        }
+        if (autoplay) { e.target.unMute(); e.target.playVideo(); }
+        else { e.target.mute(); }
       },
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.PLAYING) {
           markWatched(itemId);
           const dur = e.target.getDuration();
-          if (dur > 0) {
-            const pct = Math.round((e.target.getCurrentTime() / dur) * 100);
-            saveProgress(itemId, pct);
-          }
+          if (dur > 0) saveProgress(itemId, Math.round((e.target.getCurrentTime() / dur) * 100));
         }
         if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
       }
@@ -264,19 +256,85 @@ function createPlayer(itemId, ytId, autoplay) {
   });
 }
 
-function showPlayer(itemId) {
+// ── MP4 Player ──────────────────────────────────────────────────────────────
+function initMP4Player(itemId, autoplay) {
   const wrap = document.getElementById(`wrap-${itemId}`);
+  if (!wrap) return;
+  const item = feedOrder.find(d => d.id === itemId);
+  if (!item || !item.mp4) return;
+
+  wrap.innerHTML = `
+    <video id="mp4-${itemId}"
+      src="${item.mp4}"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 0.3s;object-fit:cover;"
+      ${autoplay ? 'autoplay muted playsinline' : 'muted playsinline'}
+      loop></video>`;
+
+  const vid = document.getElementById(`mp4-${itemId}`);
+  vid.addEventListener('canplay', () => {
+    players[itemId] = vid;
+    if (autoplay) { vid.muted = false; vid.play().catch(() => {}); }
+  });
+  vid.addEventListener('timeupdate', () => {
+    if (vid.duration > 0) {
+      markWatched(itemId);
+      saveProgress(itemId, Math.round((vid.currentTime / vid.duration) * 100));
+    }
+  });
+}
+
+function playMP4(itemId) {
+  const vid = document.getElementById(`mp4-${itemId}`);
+  if (!vid) return;
+  vid.style.opacity = '1';
   const thumb = document.getElementById(`thumb-${itemId}`);
-  if (!wrap || !players[itemId]) return;
-  const iframe = wrap.querySelector('iframe');
-  if (iframe) iframe.style.opacity = '1';
   if (thumb) thumb.style.opacity = '0';
-  try { players[itemId].unMute(); players[itemId].playVideo(); } catch(e) {}
+  vid.muted = false;
+  vid.play().catch(() => {});
+}
+
+function pauseMP4(itemId) {
+  const vid = document.getElementById(`mp4-${itemId}`);
+  if (vid) vid.pause();
+}
+
+// ── Unified Player Interface ─────────────────────────────────────────────────
+// players[itemId] can be a YT.Player or an HTMLVideoElement — both expose play/pause/getPlayerState
+
+function playItem(itemId) {
+  const p = players[itemId];
+  if (!p) return;
+  if (p instanceof HTMLVideoElement) { p.muted = false; p.play().catch(() => {}); }
+  else { try { p.unMute(); p.playVideo(); } catch(e) {} }
+}
+
+function pauseItem(itemId) {
+  const p = players[itemId];
+  if (!p) return;
+  if (p instanceof HTMLVideoElement) { p.pause(); }
+  else { try { p.pauseVideo(); } catch(e) {} }
+}
+
+function showPlayer(itemId) {
+  const item = feedOrder.find(d => d.id === itemId);
+  if (!item) return;
+  if (isYouTube(item)) {
+    const wrap = document.getElementById(`wrap-${itemId}`);
+    const thumb = document.getElementById(`thumb-${itemId}`);
+    if (!wrap || !players[itemId]) return;
+    const iframe = wrap.querySelector('iframe');
+    if (iframe) iframe.style.opacity = '1';
+    if (thumb) thumb.style.opacity = '0';
+    playItem(itemId);
+  } else if (isMP4(item)) {
+    playMP4(itemId);
+  }
 }
 
 function pauseAllPlayers() {
   Object.entries(players).forEach(([id, p]) => {
-    try { p.pauseVideo(); } catch(e) {}
+    if (p instanceof HTMLVideoElement) p.pause();
+    else { try { p.pauseVideo(); } catch(e) {} }
   });
 }
 
@@ -288,15 +346,18 @@ function bindEvents() {
     const idx = Math.round(feed.scrollTop / feed.clientHeight);
     if (idx !== currentIndex) {
       const prev = feedOrder[currentIndex];
-      if (prev && players[prev.id]) {
-        try { players[prev.id].pauseVideo(); } catch(e) {}
-      }
+      if (prev) pauseItem(prev.id);
       currentIndex = idx;
       document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === idx));
       const item = feedOrder[idx];
       if (item) {
-        if (!players[item.id]) createPlayer(item.id, item.youtubeId, true);
-        else showPlayer(item.id);
+        if (isYouTube(item)) {
+          if (!players[item.id]) createYTPlayer(item.id, item.youtubeId, true);
+          else showPlayer(item.id);
+        } else if (isMP4(item)) {
+          if (!players[item.id]) initMP4Player(item.id, true);
+          else showPlayer(item.id);
+        }
       }
     }
   });
@@ -315,12 +376,18 @@ function bindEvents() {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".card-link") || e.target.closest(".action-btn") || e.target.closest(".filter-pill")) return;
       const item = feedOrder[currentIndex];
-      if (!item || !players[item.id]) return;
-      try {
-        const state = players[item.id].getPlayerState();
-        if (state === YT.PlayerState.PLAYING) players[item.id].pauseVideo();
-        else players[item.id].playVideo();
-      } catch(e) {}
+      if (!item) return;
+      const p = players[item.id];
+      if (!p) return;
+      if (p instanceof HTMLVideoElement) {
+        if (p.paused) { p.muted = false; p.play().catch(() => {}); }
+        else p.pause();
+      } else {
+        try {
+          if (p.getPlayerState() === YT.PlayerState.PLAYING) p.pauseVideo();
+          else { p.unMute(); p.playVideo(); }
+        } catch(err) {}
+      }
     });
   });
 
@@ -340,3 +407,12 @@ function bindEvents() {
 }
 
 document.addEventListener("DOMContentLoaded", renderApp);
+
+// ── PWA: Register Service Worker ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    console.log('SW registered', reg.scope);
+  }).catch(err => {
+    console.warn('SW registration failed:', err);
+  });
+}
