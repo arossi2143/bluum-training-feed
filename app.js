@@ -238,8 +238,15 @@ function bindEvents(data) {
       ) return;
       const videoUrl = card.dataset.video;
       if (videoUrl) {
-        // Open in native YouTube app on mobile, new tab on desktop
-        window.open(videoUrl, "_blank", "noopener,noreferrer");
+        // Try YouTube app first (mobile), fall back to web
+        const youtubeAppUrl = videoUrl.replace('watch?v=', 'youtube://watch?v=');
+        const opened = window.open(youtubeAppUrl, '_blank');
+        // If app URL didn't work (desktop), open web version
+        setTimeout(() => {
+          if (!opened || opened.closed) {
+            window.open(videoUrl, '_blank', 'noopener,noreferrer');
+          }
+        }, 500);
       }
     });
   });
