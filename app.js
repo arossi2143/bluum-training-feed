@@ -1,4 +1,5 @@
 // Bluum Training Feed — TikTok-style vertical scroll training app
+// Video approach: YouTube thumbnail covers, tap to open video in native app
 
 const TRAINING_DATA = [
   {
@@ -6,8 +7,8 @@ const TRAINING_DATA = [
     topic: "Company Overview",
     title: "Who Is Bluum?",
     desc: "North America's largest learning catalyst — 30+ years transforming K-20 education through technology. We make it easy for schools to plan, buy, use, and support the tools that transform learning.",
-    videoType: "youtube",
-    videoId: "LaiWO3hGkFU", // Bluum company overview on YouTube
+    youtubeId: "LaiWO3hGkFU",
+    thumbnail: "https://img.youtube.com/vi/LaiWO3hGkFU/maxresdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Learn More at Bluum.com"
   },
@@ -16,8 +17,8 @@ const TRAINING_DATA = [
     topic: "Interactive Displays",
     title: "Interactive Displays: Bringing Lessons to Life",
     desc: "Touchscreen displays and dynamic teaching tools combine intuitive hardware and software designed for today's classrooms. Interactive displays increase student engagement by 3x vs. traditional whiteboards.",
-    videoType: "youtube",
-    videoId: "JqrFjjH_3qA", // Interactive display related
+    youtubeId: "JqrFjjH_3qA",
+    thumbnail: "https://img.youtube.com/vi/JqrFjjH_3qA/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/interactive",
     linkLabel: "Explore Interactive Solutions"
   },
@@ -26,8 +27,8 @@ const TRAINING_DATA = [
     topic: "STEM Labs",
     title: "Building STEM Labs That Actually Work",
     desc: "Hands-on STEM labs and maker spaces help students engage in problem-solving and critical thinking. The key? Start with curriculum goals, not the tech. Here's how to plan one that teachers will actually use.",
-    videoType: "youtube",
-    videoId: "bR2uvC1MoEo",
+    youtubeId: "bR2uvC1MoEo",
+    thumbnail: "https://img.youtube.com/vi/bR2uvC1MoEo/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/stem",
     linkLabel: "STEM Solutions Overview"
   },
@@ -36,8 +37,8 @@ const TRAINING_DATA = [
     topic: "Esports",
     title: "Esports in Schools — More Than Gaming",
     desc: "Student growth through gaming, teamwork, and competition. Schools with esports programs see improved attendance, higher GPAs, and stronger school pride. Here's what's actually needed to build one.",
-    videoType: "youtube",
-    videoId: "HIiNwKQkhhQ",
+    youtubeId: "HIiNwKQkhhQ",
+    thumbnail: "https://img.youtube.com/vi/HIiNwKQkhhQ/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/esports",
     linkLabel: "Bluum Esports Solutions"
   },
@@ -46,8 +47,8 @@ const TRAINING_DATA = [
     topic: "Sales Playbook",
     title: "The Bluum Sales Framework",
     desc: "Every successful Bluum rep starts with the customer's outcome, not the product. Use this 3-step framework: Listen → Connect → Solve. Know the categories: A/V, Devices, STEM, Esports.",
-    videoType: "youtube",
-    videoId: "dZBailF9TbQ",
+    youtubeId: "dZBailF9TbQ",
+    thumbnail: "https://img.youtube.com/vi/dZBailF9TbQ/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "All Solutions"
   },
@@ -56,8 +57,8 @@ const TRAINING_DATA = [
     topic: "K-12 Market",
     title: "K-12 Market Snapshot — What Districts Actually Buy",
     desc: "~$13B+ annual EdTech market in K-12. Top spend categories: devices (40%), infrastructure (25%), software (20%), A/V (15%). Districts prioritize durability, support, and educator training — not just price.",
-    videoType: "youtube",
-    videoId: "oRDDsA3Pbs8",
+    youtubeId: "oRDDsA3Pbs8",
+    thumbnail: "https://img.youtube.com/vi/oRDDsA3Pbs8/maxresdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Bluum Solutions"
   },
@@ -66,8 +67,8 @@ const TRAINING_DATA = [
     topic: "Device Category",
     title: "Device Deals: How to Qualify Fast",
     desc: "When a district says they need devices, your first 3 questions should be: 1) What grade levels? 2) Managed or unmanaged? 3) Funding source — E-Rate, ESSER, or general fund? Get these right and you'll close faster.",
-    videoType: "youtube",
-    videoId: "FzDKy6w-GPQ",
+    youtubeId: "FzDKy6w-GPQ",
+    thumbnail: "https://img.youtube.com/vi/FzDKy6w-GPQ/maxresdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Get Started"
   },
@@ -76,8 +77,8 @@ const TRAINING_DATA = [
     topic: "A/V Systems",
     title: "A/V Sales — Start With the Room Purpose",
     desc: "Before quoting any A/V system, ask: Is this room for instruction, collaboration, or presentation? The answer changes everything — from display size to microphone placement to control systems.",
-    videoType: "youtube",
-    videoId: "WDgQDGM7zZQ",
+    youtubeId: "WDgQDGM7zZQ",
+    thumbnail: "https://img.youtube.com/vi/WDgQDGM7zZQ/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "A/V Solutions"
   }
@@ -91,13 +92,12 @@ let currentIndex = 0;
 // ── SVG Icons ───────────────────────────────────────────────
 const icons = {
   play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
-  pause: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
   heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
   share: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`,
   bookmark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
   link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
   scroll: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`,
-  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`
+  playCircle: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.5)"/><path d="M10 8l6 4-6 4V8z" fill="#fff"/></svg>`
 };
 
 function getFilteredData() {
@@ -121,7 +121,6 @@ function renderApp() {
   `;
 
   bindEvents(data);
-  observeVideos();
   applyFilter(currentFilter);
 }
 
@@ -150,23 +149,15 @@ function renderFilterBar() {
 }
 
 function renderCard(item, index) {
-  const youtubeUrl = `https://www.youtube.com/embed/${item.videoId}?autoplay=0&mute=1&enablejsapi=1&playsinline=1`;
+  const videoUrl = `https://www.youtube.com/watch?v=${item.youtubeId}`;
   return `
-    <div class="video-card" data-index="${index}">
-      <div class="video-placeholder">
-        <div class="placeholder-icon">
-          ${icons.play}
+    <div class="video-card" data-index="${index}" data-video="${videoUrl}">
+      <div class="card-bg" style="background-image:url('${item.thumbnail}')">
+        <div class="card-overlay"></div>
+        <div class="play-btn">
+          ${icons.playCircle}
         </div>
       </div>
-      <iframe
-        class="video-frame"
-        src="${youtubeUrl}"
-        data-src="${youtubeUrl}"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-        style="display:none;"
-        loading="lazy"
-      ></iframe>
 
       <div class="card-content">
         <span class="topic-tag">${item.topic}</span>
@@ -213,7 +204,7 @@ function renderBottomNav() {
     <div class="bottom-nav">
       <div class="nav-hint">
         ${icons.scroll}
-        Scroll to navigate
+        Tap a card to play video
       </div>
     </div>
   `;
@@ -233,33 +224,43 @@ function bindEvents(data) {
   document.querySelectorAll(".filter-pill").forEach(pill => {
     pill.addEventListener("click", () => {
       currentFilter = pill.dataset.topic;
-      applyFilter(currentFilter);
       renderApp();
+    });
+  });
+
+  // Card → open video in YouTube
+  document.querySelectorAll(".video-card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      if (
+        e.target.closest(".card-link") ||
+        e.target.closest(".action-btn") ||
+        e.target.closest(".filter-pill")
+      ) return;
+      const videoUrl = card.dataset.video;
+      if (videoUrl) {
+        // Open in native YouTube app on mobile, new tab on desktop
+        window.open(videoUrl, "_blank", "noopener,noreferrer");
+      }
     });
   });
 
   // Action buttons
   document.querySelectorAll(".action-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const action = btn.dataset.action;
       btn.style.transform = "scale(1.3)";
       setTimeout(() => btn.style.transform = "", 200);
-      // Visual feedback only in prototype
     });
   });
 
-  // Scroll → update active dot + load video
+  // Scroll → update active dot
   const feed = document.getElementById("feed");
   feed.addEventListener("scroll", () => {
-    const cards = feed.querySelectorAll(".video-card");
-    const scrollTop = feed.scrollTop;
     const cardHeight = feed.clientHeight;
+    const scrollTop = feed.scrollTop;
     const idx = Math.round(scrollTop / cardHeight);
-    if (idx !== currentIndex && cards[idx]) {
+    if (idx !== currentIndex) {
       currentIndex = idx;
       updateActiveDot(idx);
-      loadVisibleVideo(idx);
-      pauseOtherVideos(idx);
     }
   });
 }
@@ -276,61 +277,8 @@ function updateActiveDot(idx) {
   });
 }
 
-function loadVisibleVideo(idx) {
-  const cards = document.querySelectorAll(".video-card");
-  const card = cards[idx];
-  if (!card) return;
-  const iframe = card.querySelector("iframe");
-  if (iframe && iframe.style.display === "none") {
-    iframe.style.display = "block";
-    const placeholder = card.querySelector(".video-placeholder");
-    if (placeholder) placeholder.style.display = "none";
-  }
-}
-
-function pauseOtherVideos(activeIdx) {
-  document.querySelectorAll("iframe").forEach((iframe, i) => {
-    if (i !== activeIdx) {
-      try {
-        const src = iframe.src;
-        iframe.src = src; // resets/pauses by reloading
-        iframe.style.display = "none";
-      } catch(e) {}
-    }
-  });
-}
-
-// Intersection observer for videos
-function observeVideos() {
-  const feed = document.getElementById("feed");
-  const cards = feed.querySelectorAll(".video-card");
-
-  // Load first card's video immediately
-  if (cards[0]) {
-    const iframe = cards[0].querySelector("iframe");
-    if (iframe) {
-      iframe.style.display = "block";
-      const placeholder = cards[0].querySelector(".video-placeholder");
-      if (placeholder) placeholder.style.display = "none";
-    }
-  }
-
-  // Tap to play/pause
-  cards.forEach(card => {
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".card-link") || e.target.closest(".action-btn") || e.target.closest(".filter-pill")) return;
-      const iframe = card.querySelector("iframe");
-      if (!iframe || iframe.style.display === "none") return;
-      // Can't really control YT iframe without API, but we can toggle placeholder
-    });
-  });
-}
-
 function applyFilter(topic) {
   currentFilter = topic;
-  document.querySelectorAll(".filter-pill").forEach(p => {
-    p.classList.toggle("active", p.dataset.topic === topic);
-  });
 }
 
 // ── Boot ───────────────────────────────────────────────────
