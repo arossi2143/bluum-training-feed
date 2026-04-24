@@ -1,5 +1,5 @@
 // Bluum Training Feed — TikTok-style vertical scroll training app
-// Video approach: YouTube thumbnail covers, tap to open video in native app
+// Uses YouTube IFrame API for inline audio playback on tap
 
 const TRAINING_DATA = [
   {
@@ -8,7 +8,6 @@ const TRAINING_DATA = [
     title: "Who Is Bluum?",
     desc: "North America's largest learning catalyst — 30+ years transforming K-20 education through technology. We make it easy for schools to plan, buy, use, and support the tools that transform learning.",
     youtubeId: "LaiWO3hGkFU",
-    thumbnail: "https://img.youtube.com/vi/LaiWO3hGkFU/hqdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Learn More at Bluum.com"
   },
@@ -18,7 +17,6 @@ const TRAINING_DATA = [
     title: "Interactive Displays: Bringing Lessons to Life",
     desc: "Touchscreen displays and dynamic teaching tools combine intuitive hardware and software designed for today's classrooms. Interactive displays increase student engagement by 3x vs. traditional whiteboards.",
     youtubeId: "0gL1fkJYcV8",
-    thumbnail: "https://img.youtube.com/vi/0gL1fkJYcV8/hqdefault.jpg",
     link: "https://www.bluum.com/solutions/interactive",
     linkLabel: "Explore Interactive Solutions"
   },
@@ -28,7 +26,6 @@ const TRAINING_DATA = [
     title: "Building STEM Labs That Actually Work",
     desc: "Hands-on STEM labs and maker spaces help students engage in problem-solving and critical thinking. The key? Start with curriculum goals, not the tech. Here's how to plan one that teachers will actually use.",
     youtubeId: "WxEX7zCC1_w",
-    thumbnail: "https://img.youtube.com/vi/WxEX7zCC1_w/hqdefault.jpg",
     link: "https://www.bluum.com/solutions/stem",
     linkLabel: "STEM Solutions Overview"
   },
@@ -38,7 +35,6 @@ const TRAINING_DATA = [
     title: "Esports in Schools — More Than Gaming",
     desc: "Student growth through gaming, teamwork, and competition. Schools with esports programs see improved attendance, higher GPAs, and stronger school pride. Here's what's actually needed to build one.",
     youtubeId: "COaKia8-oI4",
-    thumbnail: "https://img.youtube.com/vi/COaKia8-oI4/hqdefault.jpg",
     link: "https://www.bluum.com/solutions/esports",
     linkLabel: "Bluum Esports Solutions"
   },
@@ -48,7 +44,6 @@ const TRAINING_DATA = [
     title: "The Bluum Sales Framework",
     desc: "Every successful Bluum rep starts with the customer's outcome, not the product. Use this 3-step framework: Listen → Connect → Solve. Know the categories: A/V, Devices, STEM, Esports.",
     youtubeId: "OtSuLekKkJ8",
-    thumbnail: "https://img.youtube.com/vi/OtSuLekKkJ8/hqdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "All Solutions"
   },
@@ -56,9 +51,8 @@ const TRAINING_DATA = [
     id: 6,
     topic: "K-12 Market",
     title: "K-12 Market Snapshot — What Districts Actually Buy",
-    desc: "~\$13B+ annual EdTech market in K-12. Top spend categories: devices (40%), infrastructure (25%), software (20%), A/V (15%). Districts prioritize durability, support, and educator training — not just price.",
+    desc: "~$13B+ annual EdTech market in K-12. Top spend categories: devices (40%), infrastructure (25%), software (20%), A/V (15%). Districts prioritize durability, support, and educator training — not just price.",
     youtubeId: "wbTIilYTQ7o",
-    thumbnail: "https://img.youtube.com/vi/wbTIilYTQ7o/hqdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Bluum Solutions"
   },
@@ -68,7 +62,6 @@ const TRAINING_DATA = [
     title: "Device Deals: How to Qualify Fast",
     desc: "When a district says they need devices, your first 3 questions should be: 1) What grade levels? 2) Managed or unmanaged? 3) Funding source — E-Rate, ESSER, or general fund? Get these right and you'll close faster.",
     youtubeId: "CjxpOnpjQk8",
-    thumbnail: "https://img.youtube.com/vi/CjxpOnpjQk8/hqdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Get Started"
   },
@@ -78,7 +71,6 @@ const TRAINING_DATA = [
     title: "A/V Sales — Start With the Room Purpose",
     desc: "Before quoting any A/V system, ask: Is this room for instruction, collaboration, or presentation? The answer changes everything — from display size to microphone placement to control systems.",
     youtubeId: "wOApgEm1-W8",
-    thumbnail: "https://img.youtube.com/vi/wOApgEm1-W8/hqdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "A/V Solutions"
   }
@@ -88,17 +80,39 @@ const TOPICS = ["All", ...new Set(TRAINING_DATA.map(d => d.topic))];
 
 let currentFilter = "All";
 let currentIndex = 0;
+let players = {};
+let activePlayerId = null;
+let isMuted = true;
 
-// ── SVG Icons ───────────────────────────────────────────────
+// ── Icons ──────────────────────────────────────────────────
 const icons = {
-  play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.5)"/><path d="M10 8l6 4-6 4V8z" fill="#fff"/></svg>`,
+  mute: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`,
+  unmute: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`,
   heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
   share: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`,
   bookmark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
   link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
-  scroll: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`,
-  playCircle: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="rgba(0,0,0,0.5)"/><path d="M10 8l6 4-6 4V8z" fill="#fff"/></svg>`
+  scroll: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`
 };
+
+// ── YouTube IFrame API ──────────────────────────────────────
+let ytApiReady = false;
+let ytApiCallbacks = [];
+
+function onYouTubeIframeAPIReady() {
+  ytApiReady = true;
+  ytApiCallbacks.forEach(cb => cb());
+  ytApiCallbacks = [];
+}
+
+function waitForYtApi(callback) {
+  if (ytApiReady) {
+    callback();
+  } else {
+    ytApiCallbacks.push(callback);
+  }
+}
 
 function getFilteredData() {
   if (currentFilter === "All") return TRAINING_DATA;
@@ -121,6 +135,7 @@ function renderApp() {
   `;
 
   bindEvents(data);
+  loadVisiblePlayer(currentIndex);
   applyFilter(currentFilter);
 }
 
@@ -149,15 +164,18 @@ function renderFilterBar() {
 }
 
 function renderCard(item, index) {
-  const videoUrl = `https://www.youtube.com/watch?v=${item.youtubeId}`;
   return `
-    <div class="video-card" data-index="${index}" data-video="${videoUrl}">
-      <div class="card-bg" style="background-image:url('${item.thumbnail}')">
-        <div class="card-overlay"></div>
-        <div class="play-btn">
-          ${icons.playCircle}
+    <div class="video-card" data-index="${index}" data-id="${item.id}" data-yt="${item.youtubeId}">
+      <div class="player-wrap" id="player-wrap-${item.id}">
+        <div class="yt-placeholder" id="yt-placeholder-${item.id}">
+          <div class="play-ring">
+            ${icons.play}
+          </div>
+          <div class="tap-label">Tap to play</div>
         </div>
       </div>
+
+      <div class="card-overlay"></div>
 
       <div class="card-content">
         <span class="topic-tag">${item.topic}</span>
@@ -204,15 +222,102 @@ function renderBottomNav() {
     <div class="bottom-nav">
       <div class="nav-hint">
         ${icons.scroll}
-        Tap a card to play video
+        Scroll &amp; tap cards to play audio
       </div>
     </div>
   `;
 }
 
+// ── YouTube Player Setup ────────────────────────────────────
+function createPlayer(itemId, ytId, autoplay) {
+  waitForYtApi(() => {
+    const container = document.getElementById(`player-wrap-${itemId}`);
+    const placeholder = document.getElementById(`yt-placeholder-${itemId}`);
+    if (!container) return;
+
+    // Clear any existing player in this container
+    container.innerHTML = '';
+
+    const playerDiv = document.createElement('div');
+    playerDiv.id = `yt-player-${itemId}`;
+    container.appendChild(playerDiv);
+
+    const player = new YT.Player(`yt-player-${itemId}`, {
+      videoId: ytId,
+      width: '100%',
+      height: '100%',
+      playerVars: {
+        autoplay: autoplay ? 1 : 0,
+        mute: 1,
+        controls: 0,
+        modestbranding: 1,
+        rel: 0,
+        showinfo: 0,
+        playsinline: 1,
+        loop: 1,
+        playlist: ytId
+      },
+      events: {
+        onReady: (event) => {
+          players[itemId] = event.target;
+          event.target.mute();
+          if (autoplay) {
+            event.target.playVideo();
+            if (placeholder) placeholder.style.display = "none";
+          }
+        },
+        onStateChange: (event) => {
+          if (event.data === YT.PlayerState.ENDED) {
+            event.target.playVideo();
+          }
+        }
+      }
+    });
+  });
+}
+
+function loadVisiblePlayer(idx) {
+  const data = getFilteredData();
+  if (!data[idx]) return;
+  const item = data[idx];
+  createPlayer(item.id, item.youtubeId, true);
+}
+
+function pauseAllPlayers() {
+  Object.values(players).forEach(p => {
+    try { p.pauseVideo(); } catch(e) {}
+  });
+}
+
+function unmuteActivePlayer() {
+  const data = getFilteredData();
+  const item = data[currentIndex];
+  if (!item || !players[item.id]) return;
+  try {
+    players[item.id].unMute();
+    players[item.id].playVideo();
+    isMuted = false;
+  } catch(e) {}
+}
+
 // ── Events ─────────────────────────────────────────────────
 function bindEvents(data) {
-  // Scroll to card on dot click
+  // Scroll → update active dot + load player
+  const feed = document.getElementById("feed");
+  feed.addEventListener("scroll", () => {
+    const cardHeight = feed.clientHeight;
+    const scrollTop = feed.scrollTop;
+    const idx = Math.round(scrollTop / cardHeight);
+    if (idx !== currentIndex) {
+      currentIndex = idx;
+      updateActiveDot(idx);
+      pauseAllPlayers();
+      const item = getFilteredData()[idx];
+      if (item) createPlayer(item.id, item.youtubeId, true);
+    }
+  });
+
+  // Dot click → scroll to card
   document.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", () => {
       const idx = parseInt(dot.dataset.index);
@@ -223,12 +328,14 @@ function bindEvents(data) {
   // Filter pills
   document.querySelectorAll(".filter-pill").forEach(pill => {
     pill.addEventListener("click", () => {
+      pauseAllPlayers();
       currentFilter = pill.dataset.topic;
+      currentIndex = 0;
       renderApp();
     });
   });
 
-  // Card → open video in YouTube
+  // Card tap → unmute and play
   document.querySelectorAll(".video-card").forEach(card => {
     card.addEventListener("click", (e) => {
       if (
@@ -236,17 +343,15 @@ function bindEvents(data) {
         e.target.closest(".action-btn") ||
         e.target.closest(".filter-pill")
       ) return;
-      const videoUrl = card.dataset.video;
-      if (videoUrl) {
-        // Try YouTube app first (mobile), fall back to web
-        const youtubeAppUrl = videoUrl.replace('watch?v=', 'youtube://watch?v=');
-        const opened = window.open(youtubeAppUrl, '_blank');
-        // If app URL didn't work (desktop), open web version
-        setTimeout(() => {
-          if (!opened || opened.closed) {
-            window.open(videoUrl, '_blank', 'noopener,noreferrer');
-          }
-        }, 500);
+
+      // Unmute and play
+      const data = getFilteredData();
+      const item = data[currentIndex];
+      if (item && players[item.id]) {
+        try {
+          players[item.id].unMute();
+          players[item.id].playVideo();
+        } catch(e) {}
       }
     });
   });
@@ -257,18 +362,6 @@ function bindEvents(data) {
       btn.style.transform = "scale(1.3)";
       setTimeout(() => btn.style.transform = "", 200);
     });
-  });
-
-  // Scroll → update active dot
-  const feed = document.getElementById("feed");
-  feed.addEventListener("scroll", () => {
-    const cardHeight = feed.clientHeight;
-    const scrollTop = feed.scrollTop;
-    const idx = Math.round(scrollTop / cardHeight);
-    if (idx !== currentIndex) {
-      currentIndex = idx;
-      updateActiveDot(idx);
-    }
   });
 }
 
@@ -284,9 +377,20 @@ function updateActiveDot(idx) {
   });
 }
 
-function applyFilter(topic) {
-  currentFilter = topic;
+function applyFilter() {
+  document.querySelectorAll(".filter-pill").forEach(p => {
+    p.classList.toggle("active", p.dataset.topic === currentFilter);
+  });
 }
 
 // ── Boot ───────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", renderApp);
+// Load YouTube IFrame API
+const tag = document.createElement('script');
+tag.src = 'https://www.youtube.com/iframe_api';
+const firstScript = document.getElementsByTagName('script')[0];
+firstScript.parentNode.insertBefore(tag, firstScript);
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Small delay to let DOM settle
+  setTimeout(renderApp, 50);
+});
