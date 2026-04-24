@@ -159,3 +159,38 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); }
 
 /* Counter */
 .counter { position: absolute; left: 50%; transform: translateX(-50%); bottom: 95px; z-index: 5; font-size: 11px; color: rgba(255,255,255,0.45); font-weight: 600; letter-spacing: 0.05em; }
+
+/* Watched badge */
+.watched-badge {
+  position: absolute; top: 16px; left: 16px; z-index: 10;
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,214,50,0.4);
+  color: #00D632; font-size: 11px; font-weight: 700;
+  padding: 5px 10px; border-radius: 20px; letter-spacing: 0.04em;
+}
+.watched-badge svg { width: 12px; height: 12px; }
+
+/* Watched card dimming */
+.video-card.watched { opacity: 0.82; }
+.video-card.watched .card-title { opacity: 0.85; }
+
+/* Resume bar */
+.resume-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+  background: rgba(255,255,255,0.2); border-radius: 0 0 4px 4px; overflow: hidden;
+}
+.resume-fill { height: 100%; background: var(--bluum-green); border-radius: 0 0 4px 4px; transition: width 0.5s; }
+
+/* Progress badge (top bar) */
+.progress-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75); font-size: 12px; font-weight: 600;
+  padding: 5px 12px; border-radius: 20px; cursor: default;
+}
+.progress-badge svg { width: 14px; height: 14px; }
+
+/* Dot more label */
+.dot-more { font-size: 9px; color: rgba(255,255,255,0.35); text-align: center; padding: 2px 0; letter-spacing: 0.03em; }

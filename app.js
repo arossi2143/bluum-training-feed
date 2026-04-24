@@ -1,16 +1,19 @@
 // Bluum Training Feed — TikTok-style vertical scroll
-// Tap card → inline YouTube player, audio plays, stays in feed
+// Smart shuffle: daily seed + topic spread + watch tracking + mandatory intro
 
+// ── Video Data ────────────────────────────────────────────────────────────────
+// Add new videos here. Fields: id, topic, title, desc, youtubeId, link, linkLabel
+// Topics with more videos will get proportional representation in the feed.
 const TRAINING_DATA = [
-  { id:1, topic:"Company Overview", title:"Who Is Bluum?", desc:"North America's largest learning catalyst — 30+ years transforming K-20 education through technology. We make it easy for schools to plan, buy, use, and support the tools that transform learning.", youtubeId:"LaiWO3hGkFU", link:"https://www.bluum.com/", linkLabel:"Learn More at Bluum.com" },
-  { id:2, topic:"Google", title:"Go BIG with Google for Education", desc:"The Google wave in education keeps gaining momentum. Chromebooks, Google Workspace, and Classroom are the backbone of modern K-12 schools. Here's how to position Google solutions for your districts.", youtubeId:"2YfAvQrO03c", link:"https://edu.google.com/", linkLabel:"Google for Education" },
-  { id:3, topic:"Lenovo", title:"Lenovo Chromebooks — Built for Education", desc:"Secure, easy to manage, and affordable. Lenovo Chromebooks with Google Education Upgrade are designed to support learners, educators, and IT teams. 50 million students and educators already use them worldwide.", youtubeId:"FP9IN1AOlnc", link:"https://www.lenovo.com/education", linkLabel:"Lenovo Education" },
-  { id:4, topic:"Lenovo", title:"Smarter K-12 with Lenovo", desc:"Innovative technology transforming classrooms across North America. Lenovo's K-12 education solutions cover devices, infrastructure, and support — everything a district needs to modernize.", youtubeId:"-OoqBSjxbLI", link:"https://www.lenovo.com/education", linkLabel:"Lenovo Education" },
-  { id:5, topic:"Samsung", title:"Samsung Interactive Display — Plan & Teach", desc:"Samsung's Interactive Display helps teachers plan and teach engaging lessons. Built for K-12 with an intuitive interface, digital whiteboard, and classroom-ready features teachers actually use.", youtubeId:"3WfcUFdRt9o", link:"https://www.samsung.com/business/", linkLabel:"Samsung Business" },
-  { id:6, topic:"Samsung", title:"Samsung Interactive Display — Three Ways to Teach", desc:"One lesson, three ways. Samsung's Interactive Display supports the way teachers work today — flexible, collaborative, and easy to use. Great demo piece for district presentations.", youtubeId:"UiSBeBHF_VE", link:"https://www.samsung.com/business/", linkLabel:"Samsung Business" },
-  { id:7, topic:"Promethean", title:"Promethean — Transform Your Classrooms", desc:"Promethean creates learning and collaboration tools that engage students and bring out the brilliance in everyone. The ActivPanel is one of the most requested interactive displays in K-12.", youtubeId:"tmu-TLrgUvE", link:"https://www.prometheanworld.com/", linkLabel:"Promethean" },
-  { id:8, topic:"Promethean", title:"Promethean ActivPanel 10 — Next Gen Interactive Tech", desc:"The latest ActivPanel 10 combines premium hardware with Promethean's ActivSuite software — designed to transform collaboration in any K-12 or higher ed classroom.", youtubeId:"-5XiL2dCNf0", link:"https://www.prometheanworld.com/", linkLabel:"Promethean" },
-  { id:9, topic:"Newline", title:"Introducing the Q Pro Elite Series!", desc:"Meet the Q Pro Elite — Newline's flagship interactive display built for modern classrooms and collaboration spaces. This overview covers the key features and capabilities that make it a top choice for K-12 and higher ed.", youtubeId:"qQv9HLvqwDk", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" },
+  { id:1,  topic:"Company Overview", title:"Who Is Bluum?", desc:"North America's largest learning catalyst — 30+ years transforming K-20 education through technology. We make it easy for schools to plan, buy, use, and support the tools that transform learning.", youtubeId:"LaiWO3hGkFU", link:"https://www.bluum.com/", linkLabel:"Learn More at Bluum.com" },
+  { id:2,  topic:"Google", title:"Go BIG with Google for Education", desc:"The Google wave in education keeps gaining momentum. Chromebooks, Google Workspace, and Classroom are the backbone of modern K-12 schools. Here's how to position Google solutions for your districts.", youtubeId:"2YfAVQrO03c", link:"https://edu.google.com/", linkLabel:"Google for Education" },
+  { id:3,  topic:"Lenovo", title:"Lenovo Chromebooks — Built for Education", desc:"Secure, easy to manage, and affordable. Lenovo Chromebooks with Google Education Upgrade are designed to support learners, educators, and IT teams. 50 million students and educators already use them worldwide.", youtubeId:"FP9IN1AOlnc", link:"https://www.lenovo.com/education", linkLabel:"Lenovo Education" },
+  { id:4,  topic:"Lenovo", title:"Smarter K-12 with Lenovo", desc:"Innovative technology transforming classrooms across North America. Lenovo's K-12 education solutions cover devices, infrastructure, and support — everything a district needs to modernize.", youtubeId:"-OoqBSjxbLI", link:"https://www.lenovo.com/education", linkLabel:"Lenovo Education" },
+  { id:5,  topic:"Samsung", title:"Samsung Interactive Display — Plan & Teach", desc:"Samsung's Interactive Display helps teachers plan and teach engaging lessons. Built for K-12 with an intuitive interface, digital whiteboard, and classroom-ready features teachers actually use.", youtubeId:"3WfcUFdRt9o", link:"https://www.samsung.com/business/", linkLabel:"Samsung Business" },
+  { id:6,  topic:"Samsung", title:"Samsung Interactive Display — Three Ways to Teach", desc:"One lesson, three ways. Samsung's Interactive Display supports the way teachers work today — flexible, collaborative, and easy to use. Great demo piece for district presentations.", youtubeId:"UiSBeBHF_VE", link:"https://www.samsung.com/business/", linkLabel:"Samsung Business" },
+  { id:7,  topic:"Promethean", title:"Promethean — Transform Your Classrooms", desc:"Promethean creates learning and collaboration tools that engage students and bring out the brilliance in everyone. The ActivPanel is one of the most requested interactive displays in K-12.", youtubeId:"tmu-TLrgUvE", link:"https://www.prometheanworld.com/", linkLabel:"Promethean" },
+  { id:8,  topic:"Promethean", title:"Promethean ActivPanel 10 — Next Gen Interactive Tech", desc:"The latest ActivPanel 10 combines premium hardware with Promethean's ActivSuite software — designed to transform collaboration in any K-12 or higher ed classroom.", youtubeId:"-5XiL2dCNf0", link:"https://www.prometheanworld.com/", linkLabel:"Promethean" },
+  { id:9,  topic:"Newline", title:"Introducing the Q Pro Elite Series!", desc:"Meet the Q Pro Elite — Newline's flagship interactive display built for modern classrooms and collaboration spaces. This overview covers the key features and capabilities that make it a top choice for K-12 and higher ed.", youtubeId:"qQv9HLvqwDk", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" },
   { id:10, topic:"Newline", title:"Introducing the Newline AI Remote Control!", desc:"The Newline AI Remote Control brings intelligent voice control and streamlined navigation to your Q Pro Elite display. Learn how it enhances the interactive display experience for teachers and presenters.", youtubeId:"CT6LxrYWvhI", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" },
   { id:11, topic:"Newline", title:"Q Pro Elite: Powering on your Display", desc:"Step-by-step guide to powering on your Q Pro Elite interactive display. Learn the correct startup sequence and what to expect on first boot.", youtubeId:"zvE8O_6Jq3E", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" },
   { id:12, topic:"Newline", title:"Q Pro Elite: Enabling your Side Toolbars", desc:"Customize your teaching workflow by enabling and configuring the side toolbars on your Q Pro Elite. These shortcuts give you quick access to the tools you use most.", youtubeId:"67xjP2VrEZI", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" },
@@ -30,10 +33,108 @@ const TRAINING_DATA = [
   { id:26, topic:"Newline", title:"Q Pro Elite: Using a USB-A Document Camera", desc:"Connect a USB document camera to your Q Pro Elite to display physical documents, textbooks, and 3D objects live on screen. Perfect for demonstrating lab work, art, and more.", youtubeId:"0dXA0raRB-I", link:"https://newline-interactive.com/usa/products/q-pro-elite/", linkLabel:"Q Pro Elite at Newline" }
 ];
 
-const TOPICS = ["All", ...new Set(TRAINING_DATA.map(d => d.topic))];
+// ── Watch Tracking ──────────────────────────────────────────────────────────
+const WATCH_KEY = 'bluum_training_watched';
+const PROGRESS_KEY = 'bluum_training_progress';
+
+function getWatched() {
+  try { return new Set(JSON.parse(localStorage.getItem(WATCH_KEY) || '[]')); }
+  catch(e) { return new Set(); }
+}
+
+function markWatched(id) {
+  const watched = getWatched();
+  watched.add(id);
+  localStorage.setItem(WATCH_KEY, JSON.stringify([...watched]));
+}
+
+function getProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+
+function saveProgress(id, pct) {
+  const p = getProgress();
+  p[id] = pct;
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(p));
+}
+
+// ── Seeded Shuffle (deterministic per seed) ──────────────────────────────────
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = ((s >>> 0) % (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Daily Seed ───────────────────────────────────────────────────────────────
+function getDailySeed() {
+  const now = new Date();
+  const ymd = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+  let h = 0;
+  for (let c of ymd) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return h;
+}
+
+// ── Topic Spread ────────────────────────────────────────────────────────────
+// Round-robin through topics so videos don't clump
+function spreadTopics(items) {
+  const byTopic = {};
+  for (const item of items) {
+    if (!byTopic[item.topic]) byTopic[item.topic] = [];
+    byTopic[item[item.topic.length - 1] > 0 ? item.topic : item.topic] // just topic key
+    byTopic[item.topic].push(item);
+  }
+  // Rebuild: interleave topics fairly
+  const topics = Object.keys(byTopic);
+  const maxLen = Math.max(...topics.map(t => byTopic[t].length));
+  const result = [];
+  for (let i = 0; i < maxLen; i++) {
+    for (const t of topics) {
+      if (i < byTopic[t].length) result.push(byTopic[t][i]);
+    }
+  }
+  return result;
+}
+
+// ── Build Smart Feed Order ──────────────────────────────────────────────────
+function buildFeedOrder() {
+  const Pinned_ID = 1; // Bluum Overview always first
+  const pinned = TRAINING_DATA.find(d => d.id === Pinned_ID);
+  const rest = TRAINING_DATA.filter(d => d.id !== Pinned_ID);
+  const watched = getWatched();
+  const seed = getDailySeed();
+
+  // Separate watched vs unwatched
+  const unwatched = rest.filter(d => !watched.has(d.id));
+  const alreadyWatched = rest.filter(d => watched.has(d.id));
+
+  // Shuffle each group with same daily seed (team stays in sync)
+  const shuffledUnwatched = seededShuffle(unwatched, seed);
+  const shuffledWatched = seededShuffle(alreadyWatched, seed);
+
+  // Spread topics within each group
+  const spreadUnwatched = spreadTopics(shuffledUnwatched);
+  const spreadWatched = spreadTopics(shuffledWatched);
+
+  // Unwatched float to front, watched trail behind
+  // But: within unwatched, we do a smart sub-shuffle:
+  // If there are lots of topics, spread them; if few, just shuffle
+  const final = pinned ? [pinned, ...spreadUnwatched, ...spreadWatched] : [...spreadUnwatched, ...spreadWatched];
+
+  return final;
+}
+
+// ── Active Topic List ───────────────────────────────────────────────────────
+const TOPICS = ["All", "Unwatched", ...new Set(TRAINING_DATA.map(d => d.topic))];
 
 let currentFilter = "All";
 let currentIndex = 0;
+let feedOrder = [];    // ordered list of TRAINING_DATA items
 let players = {};       // itemId → YT.Player instance
 let ytApiReady = false;
 
@@ -43,10 +144,12 @@ const icons = {
   share:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`,
   bookmark:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
   link:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
-  scroll:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`
+  scroll:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+  eye:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
 };
 
-// ── YouTube IFrame API ──────────────────────────────────────
+// ── YouTube IFrame API ──────────────────────────────────────────────────────
 function onYouTubeIframeAPIReady() {
   ytApiReady = true;
 }
@@ -55,23 +158,35 @@ const tag = document.createElement('script');
 tag.src = 'https://www.youtube.com/iframe_api';
 document.head.appendChild(tag);
 
-// ── Render ─────────────────────────────────────────────────
+// ── Render ──────────────────────────────────────────────────────────────────
 function renderApp() {
-  const data = getFilteredData();
+  feedOrder = buildFeedOrder();
+  const watched = getWatched();
+  const progress = getProgress();
+  const watchedCount = [...watched].length;
+  const totalCount = TRAINING_DATA.length;
+
   document.getElementById("app").innerHTML = `
     <div class="top-bar">
       <div class="logo"><span class="logo-dot"></span>Bluum Training</div>
-      <div class="badge">Internal</div>
+      <div class="progress-badge" id="progress-badge" title="Your watch progress">
+        ${icons.eye} <span id="progress-text">${watchedCount}/${totalCount}</span>
+      </div>
     </div>
     <div class="filter-bar">
       ${TOPICS.map(t => `<div class="filter-pill${t===currentFilter?" active":""}" data-topic="${t}">${t}</div>`).join("")}
     </div>
     <div class="feed-container" id="feed">
-      ${data.map((item, i) => `
-        <div class="video-card" data-index="${i}" data-id="${item.id}" data-yt="${item.youtubeId}">
+      ${feedOrder.map((item, i) => {
+        const isWatched = watched.has(item.id);
+        const pct = progress[item.id] || 0;
+        return `
+        <div class="video-card${isWatched?" watched":""}" data-index="${i}" data-id="${item.id}" data-yt="${item.youtubeId}">
+          ${isWatched ? `<div class="watched-badge">${icons.check} Watched</div>` : ""}
           <div class="player-wrap" id="wrap-${item.id}">
             <div class="yt-thumb" id="thumb-${item.id}" style="background-image:url('https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg')">
               <div class="play-ring">${icons.play}</div>
+              ${pct > 0 && pct < 95 ? `<div class="resume-bar"><div class="resume-fill" style="width:${pct}%"></div></div>` : ""}
             </div>
           </div>
           <div class="card-overlay"></div>
@@ -84,38 +199,39 @@ function renderApp() {
             </a>
           </div>
           <div class="action-row">
-            <div class="action-btn">${icons.heart}<span>Like</span></div>
-            <div class="action-btn">${icons.bookmark}<span>Save</span></div>
-            <div class="action-btn">${icons.share}<span>Share</span></div>
+            <div class="action-btn" data-action="like" data-id="${item.id}">${icons.heart}<span>Like</span></div>
+            <div class="action-btn" data-action="save" data-id="${item.id}">${icons.bookmark}<span>Save</span></div>
+            <div class="action-btn" data-action="share" data-id="${item.id}">${icons.share}<span>Share</span></div>
           </div>
-          <div class="counter">${i+1} / ${data.length}</div>
-        </div>
-      `).join("")}
+          <div class="counter">${i+1} / ${feedOrder.length}</div>
+        </div>`;
+      }).join("")}
     </div>
     <div class="progress-dots">
-      ${data.map((_,i) => `<div class="dot${i===0?" active":""}" data-index="${i}"></div>`).join("")}
+      ${feedOrder.slice(0, 20).map((_,i) => `<div class="dot${i===0?" active":""}" data-index="${i}"></div>`).join("")}
+      ${feedOrder.length > 20 ? `<div class="dot-more">+${feedOrder.length - 20} more</div>` : ""}
     </div>
     <div class="bottom-nav">
       <div class="nav-hint">${icons.scroll} Scroll — videos auto-play with audio</div>
     </div>
   `;
-  bindEvents(data);
-  // Auto-load first player
-  if (ytApiReady) createPlayer(data[0].id, data[0].youtubeId, false);
+  bindEvents();
+  if (ytApiReady && feedOrder[0]) createPlayer(feedOrder[0].id, feedOrder[0].youtubeId, false);
 }
 
-function getFilteredData() {
-  return currentFilter === "All" ? TRAINING_DATA : TRAINING_DATA.filter(d => d.topic === currentFilter);
-}
-
-// ── Player ─────────────────────────────────────────────────
-function createPlayer(itemId, ytId, autoplay) {
-  if (!ytApiReady) {
-    setTimeout(() => createPlayer(itemId, ytId, autoplay), 200);
-    return;
+function getFilteredFeed() {
+  if (currentFilter === "All") return feedOrder;
+  if (currentFilter === "Unwatched") {
+    const watched = getWatched();
+    return feedOrder.filter(item => !watched.has(item.id));
   }
+  return feedOrder.filter(d => d.topic === currentFilter);
+}
+
+// ── Player ──────────────────────────────────────────────────────────────────
+function createPlayer(itemId, ytId, autoplay) {
+  if (!ytApiReady) { setTimeout(() => createPlayer(itemId, ytId, autoplay), 200); return; }
   const wrap = document.getElementById(`wrap-${itemId}`);
-  const thumb = document.getElementById(`thumb-${itemId}`);
   if (!wrap) return;
 
   wrap.innerHTML = `<div id="yt-${itemId}" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 0.3s;"></div>`;
@@ -134,6 +250,14 @@ function createPlayer(itemId, ytId, autoplay) {
         }
       },
       onStateChange: (e) => {
+        if (e.data === YT.PlayerState.PLAYING) {
+          markWatched(itemId);
+          const dur = e.target.getDuration();
+          if (dur > 0) {
+            const pct = Math.round((e.target.getCurrentTime() / dur) * 100);
+            saveProgress(itemId, pct);
+          }
+        }
         if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
       }
     }
@@ -144,17 +268,10 @@ function showPlayer(itemId) {
   const wrap = document.getElementById(`wrap-${itemId}`);
   const thumb = document.getElementById(`thumb-${itemId}`);
   if (!wrap || !players[itemId]) return;
-
-  // Show player
   const iframe = wrap.querySelector('iframe');
   if (iframe) iframe.style.opacity = '1';
   if (thumb) thumb.style.opacity = '0';
-
-  // Unmute and play
-  try {
-    players[itemId].unMute();
-    players[itemId].playVideo();
-  } catch(e) {}
+  try { players[itemId].unMute(); players[itemId].playVideo(); } catch(e) {}
 }
 
 function pauseAllPlayers() {
@@ -163,58 +280,50 @@ function pauseAllPlayers() {
   });
 }
 
-// ── Events ─────────────────────────────────────────────────
-function bindEvents(data) {
+// ── Events ──────────────────────────────────────────────────────────────────
+function bindEvents() {
   const feed = document.getElementById("feed");
 
-  // Scroll → update dot + pause previous + auto-play current
   feed.addEventListener("scroll", () => {
     const idx = Math.round(feed.scrollTop / feed.clientHeight);
     if (idx !== currentIndex) {
-      const prev = data[currentIndex];
+      const prev = feedOrder[currentIndex];
       if (prev && players[prev.id]) {
         try { players[prev.id].pauseVideo(); } catch(e) {}
       }
       currentIndex = idx;
       document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === idx));
-      const item = data[idx];
+      const item = feedOrder[idx];
       if (item) {
         if (!players[item.id]) createPlayer(item.id, item.youtubeId, true);
-        else {
-          showPlayer(item.id);
-        }
+        else showPlayer(item.id);
       }
     }
   });
 
-  // Filter pills
   document.querySelectorAll(".filter-pill").forEach(p => {
     p.addEventListener("click", () => {
       pauseAllPlayers();
       currentFilter = p.dataset.topic;
       currentIndex = 0;
+      feed.scrollTop = 0;
       renderApp();
     });
   });
 
-  // Card tap → toggle play/pause
   document.querySelectorAll(".video-card").forEach(card => {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".card-link") || e.target.closest(".action-btn") || e.target.closest(".filter-pill")) return;
-      const item = data[currentIndex];
+      const item = feedOrder[currentIndex];
       if (!item || !players[item.id]) return;
       try {
         const state = players[item.id].getPlayerState();
-        if (state === YT.PlayerState.PLAYING) {
-          players[item.id].pauseVideo();
-        } else {
-          players[item.id].playVideo();
-        }
+        if (state === YT.PlayerState.PLAYING) players[item.id].pauseVideo();
+        else players[item.id].playVideo();
       } catch(e) {}
     });
   });
 
-  // Action buttons
   document.querySelectorAll(".action-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       btn.style.transform = "scale(1.3)";
@@ -222,7 +331,6 @@ function bindEvents(data) {
     });
   });
 
-  // Dot click
   document.querySelectorAll(".dot").forEach(dot => {
     dot.addEventListener("click", () => {
       const idx = parseInt(dot.dataset.index);
