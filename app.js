@@ -54,7 +54,6 @@ function renderApp() {
           <div class="player-wrap" id="wrap-${item.id}">
             <div class="yt-thumb" id="thumb-${item.id}" style="background-image:url('https://img.youtube.com/vi/${item.youtubeId}/hqdefault.jpg')">
               <div class="play-ring">${icons.play}</div>
-              <div class="tap-label">Tap to play</div>
             </div>
           </div>
           <div class="card-overlay"></div>
@@ -79,7 +78,7 @@ function renderApp() {
       ${data.map((_,i) => `<div class="dot${i===0?" active":""}" data-index="${i}"></div>`).join("")}
     </div>
     <div class="bottom-nav">
-      <div class="nav-hint">${icons.scroll} Scroll &amp; tap to play inline</div>
+      <div class="nav-hint">${icons.scroll} Scroll — videos auto-play with audio</div>
     </div>
   `;
   bindEvents(data);
@@ -109,7 +108,12 @@ function createPlayer(itemId, ytId, autoplay) {
     events: {
       onReady: (e) => {
         players[itemId] = e.target;
-        if (!autoplay) e.target.mute();
+        if (autoplay) {
+          e.target.unMute();
+          e.target.playVideo();
+        } else {
+          e.target.mute();
+        }
       },
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
@@ -145,22 +149,22 @@ function pauseAllPlayers() {
 function bindEvents(data) {
   const feed = document.getElementById("feed");
 
-  // Scroll → update dot + load visible player + pause others
+  // Scroll → update dot + pause previous + auto-play current
   feed.addEventListener("scroll", () => {
     const idx = Math.round(feed.scrollTop / feed.clientHeight);
     if (idx !== currentIndex) {
-      // Pause previous
       const prev = data[currentIndex];
       if (prev && players[prev.id]) {
         try { players[prev.id].pauseVideo(); } catch(e) {}
       }
       currentIndex = idx;
       document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === idx));
-      // Load + auto-play new
       const item = data[idx];
       if (item) {
         if (!players[item.id]) createPlayer(item.id, item.youtubeId, true);
-        else showPlayer(item.id);
+        else {
+          showPlayer(item.id);
+        }
       }
     }
   });
@@ -175,18 +179,20 @@ function bindEvents(data) {
     });
   });
 
-  // Card tap → show + play player (user gesture = audio allowed)
+  // Card tap → toggle play/pause
   document.querySelectorAll(".video-card").forEach(card => {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".card-link") || e.target.closest(".action-btn") || e.target.closest(".filter-pill")) return;
       const item = data[currentIndex];
-      if (!item) return;
-      if (!players[item.id]) {
-        createPlayer(item.id, item.youtubeId, true);
-        setTimeout(() => showPlayer(item.id), 800);
-      } else {
-        showPlayer(item.id);
-      }
+      if (!item || !players[item.id]) return;
+      try {
+        const state = players[item.id].getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          players[item.id].pauseVideo();
+        } else {
+          players[item.id].playVideo();
+        }
+      } catch(e) {}
     });
   });
 
