@@ -17,8 +17,8 @@ const TRAINING_DATA = [
     topic: "Interactive Displays",
     title: "Interactive Displays: Bringing Lessons to Life",
     desc: "Touchscreen displays and dynamic teaching tools combine intuitive hardware and software designed for today's classrooms. Interactive displays increase student engagement by 3x vs. traditional whiteboards.",
-    youtubeId: "JqrFjjH_3qA",
-    thumbnail: "https://img.youtube.com/vi/JqrFjjH_3qA/maxresdefault.jpg",
+    youtubeId: "0gL1fkJYcV8",
+    thumbnail: "https://img.youtube.com/vi/0gL1fkJYcV8/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/interactive",
     linkLabel: "Explore Interactive Solutions"
   },
@@ -27,8 +27,8 @@ const TRAINING_DATA = [
     topic: "STEM Labs",
     title: "Building STEM Labs That Actually Work",
     desc: "Hands-on STEM labs and maker spaces help students engage in problem-solving and critical thinking. The key? Start with curriculum goals, not the tech. Here's how to plan one that teachers will actually use.",
-    youtubeId: "bR2uvC1MoEo",
-    thumbnail: "https://img.youtube.com/vi/bR2uvC1MoEo/maxresdefault.jpg",
+    youtubeId: "WxEX7zCC1_w",
+    thumbnail: "https://img.youtube.com/vi/WxEX7zCC1_w/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/stem",
     linkLabel: "STEM Solutions Overview"
   },
@@ -37,8 +37,8 @@ const TRAINING_DATA = [
     topic: "Esports",
     title: "Esports in Schools — More Than Gaming",
     desc: "Student growth through gaming, teamwork, and competition. Schools with esports programs see improved attendance, higher GPAs, and stronger school pride. Here's what's actually needed to build one.",
-    youtubeId: "HIiNwKQkhhQ",
-    thumbnail: "https://img.youtube.com/vi/HIiNwKQkhhQ/maxresdefault.jpg",
+    youtubeId: "COaKia8-oI4",
+    thumbnail: "https://img.youtube.com/vi/COaKia8-oI4/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions/esports",
     linkLabel: "Bluum Esports Solutions"
   },
@@ -47,8 +47,8 @@ const TRAINING_DATA = [
     topic: "Sales Playbook",
     title: "The Bluum Sales Framework",
     desc: "Every successful Bluum rep starts with the customer's outcome, not the product. Use this 3-step framework: Listen → Connect → Solve. Know the categories: A/V, Devices, STEM, Esports.",
-    youtubeId: "dZBailF9TbQ",
-    thumbnail: "https://img.youtube.com/vi/dZBailF9TbQ/maxresdefault.jpg",
+    youtubeId: "OtSuLekKkJ8",
+    thumbnail: "https://img.youtube.com/vi/OtSuLekKkJ8/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "All Solutions"
   },
@@ -56,9 +56,9 @@ const TRAINING_DATA = [
     id: 6,
     topic: "K-12 Market",
     title: "K-12 Market Snapshot — What Districts Actually Buy",
-    desc: "~$13B+ annual EdTech market in K-12. Top spend categories: devices (40%), infrastructure (25%), software (20%), A/V (15%). Districts prioritize durability, support, and educator training — not just price.",
-    youtubeId: "oRDDsA3Pbs8",
-    thumbnail: "https://img.youtube.com/vi/oRDDsA3Pbs8/maxresdefault.jpg",
+    desc: "~\$13B+ annual EdTech market in K-12. Top spend categories: devices (40%), infrastructure (25%), software (20%), A/V (15%). Districts prioritize durability, support, and educator training — not just price.",
+    youtubeId: "wbTIilYTQ7o",
+    thumbnail: "https://img.youtube.com/vi/wbTIilYTQ7o/maxresdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Bluum Solutions"
   },
@@ -67,8 +67,8 @@ const TRAINING_DATA = [
     topic: "Device Category",
     title: "Device Deals: How to Qualify Fast",
     desc: "When a district says they need devices, your first 3 questions should be: 1) What grade levels? 2) Managed or unmanaged? 3) Funding source — E-Rate, ESSER, or general fund? Get these right and you'll close faster.",
-    youtubeId: "FzDKy6w-GPQ",
-    thumbnail: "https://img.youtube.com/vi/FzDKy6w-GPQ/maxresdefault.jpg",
+    youtubeId: "CjxpOnpjQk8",
+    thumbnail: "https://img.youtube.com/vi/CjxpOnpjQk8/maxresdefault.jpg",
     link: "https://www.bluum.com/",
     linkLabel: "Get Started"
   },
@@ -77,8 +77,8 @@ const TRAINING_DATA = [
     topic: "A/V Systems",
     title: "A/V Sales — Start With the Room Purpose",
     desc: "Before quoting any A/V system, ask: Is this room for instruction, collaboration, or presentation? The answer changes everything — from display size to microphone placement to control systems.",
-    youtubeId: "WDgQDGM7zZQ",
-    thumbnail: "https://img.youtube.com/vi/WDgQDGM7zZQ/maxresdefault.jpg",
+    youtubeId: "wOApgEm1-W8",
+    thumbnail: "https://img.youtube.com/vi/wOApgEm1-W8/maxresdefault.jpg",
     link: "https://www.bluum.com/solutions",
     linkLabel: "A/V Solutions"
   }
